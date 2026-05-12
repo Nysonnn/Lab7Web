@@ -599,6 +599,234 @@ Dengan query tersebut View Cell hanya akan menampilkan artikel berdasarkan kateg
 
 ---
 
+---
+
+# 🚀 Praktikum 4 - Modul Login dan Auth Filter
+
+# 1️⃣ Membuat Tabel User
+
+Membuat tabel user untuk menyimpan data login administrator.
+
+SQL:
+
+```sql
+CREATE TABLE user (
+    id INT(11) auto_increment,
+    username VARCHAR(200) NOT NULL,
+    useremail VARCHAR(200),
+    userpassword VARCHAR(200),
+    PRIMARY KEY(id)
+);
+```
+
+## Screenshot
+![Screenshot Table User](screenshots/table-user.png)
+
+---
+
+# 2️⃣ Membuat User Model
+
+Membuat file model:
+
+```bash
+app/Models/UserModel.php
+```
+
+Model digunakan untuk menghubungkan data user dengan database.
+
+## Screenshot
+![Screenshot User Model](screenshots/user-model.png)
+
+---
+
+# 3️⃣ Membuat Controller User
+
+Membuat controller:
+
+```bash
+app/Controllers/User.php
+```
+
+Controller digunakan untuk:
+- proses login
+- validasi user
+- membuat session login
+- logout
+
+## Screenshot
+![Screenshot User Controller](screenshots/user-controller.png)
+
+---
+
+# 4️⃣ Membuat View Login
+
+Membuat halaman login:
+
+```bash
+app/Views/user/login.php
+```
+
+Halaman login digunakan untuk autentikasi user sebelum masuk ke halaman admin.
+
+## Screenshot
+![Screenshot Login View](screenshots/login-view.png)
+
+---
+
+# 5️⃣ Membuat Database Seeder
+
+Membuat seeder untuk memasukkan akun admin secara otomatis.
+
+Command:
+
+```bash
+php spark make:seeder UserSeeder
+```
+
+Seeder digunakan untuk membuat data dummy login administrator.
+
+## Screenshot
+![Screenshot User Seeder](screenshots/user-seeder.png)
+
+---
+
+# 6️⃣ Menjalankan Seeder
+
+Menjalankan seeder menggunakan command:
+
+```bash
+php spark db:seed UserSeeder
+```
+
+Data admin berhasil masuk ke database.
+
+## Screenshot
+![Screenshot Spark Seeder](screenshots/spark-seeder.png)
+
+---
+
+# 7️⃣ Membuat Auth Filter
+
+Membuat file filter:
+
+```bash
+app/Filters/Auth.php
+```
+
+Filter digunakan untuk melindungi halaman admin agar hanya dapat diakses setelah login.
+
+## Screenshot
+![Screenshot Auth Filter](screenshots/auth-filter.png)
+
+---
+
+# 8️⃣ Menambahkan Config Filter
+
+Menambahkan auth filter pada file:
+
+```bash
+app/Config/Filters.php
+```
+
+Code:
+
+```php
+'auth' => \App\Filters\Auth::class,
+```
+
+## Screenshot
+![Screenshot Filters Config](screenshots/filters-config.png)
+
+---
+
+# 9️⃣ Menambahkan Routes Login
+
+Menambahkan route login dan logout pada file:
+
+```bash
+app/Config/Routes.php
+```
+
+Code:
+
+```php
+$routes->match(['get', 'post'], 'user/login', 'User::login');
+
+$routes->get('user/logout', 'User::logout');
+```
+
+Serta menambahkan proteksi auth filter pada halaman admin.
+
+## Screenshot
+![Screenshot Routes Login](screenshots/routes-login.png)
+
+---
+
+# 🔟 Menampilkan Halaman Login
+
+Menjalankan halaman login pada browser:
+
+```bash
+http://localhost:8080/user/login
+```
+
+## Screenshot
+![Screenshot Halaman Login](screenshots/halaman-login.png)
+
+---
+
+# 1️⃣1️⃣ Login Berhasil
+
+Melakukan login menggunakan akun administrator:
+
+Email:
+
+```bash
+admin@email.com
+```
+
+Password:
+
+```bash
+admin123
+```
+
+Setelah login berhasil maka user diarahkan ke halaman admin artikel.
+
+## Screenshot
+![Screenshot Login Berhasil](screenshots/login-berhasil.png)
+
+---
+
+# 1️⃣2️⃣ Redirect Login
+
+Ketika user belum login dan mencoba mengakses halaman admin:
+
+```bash
+http://localhost:8080/admin/artikel
+```
+
+maka sistem otomatis redirect ke halaman login.
+
+## Screenshot
+![Screenshot Redirect Login](screenshots/redirect-login.png)
+
+---
+
+# ✅ Kesimpulan Praktikum 4
+
+Pada praktikum ini berhasil dibuat:
+- Sistem Login
+- Session Login
+- Logout
+- Auth Filter
+- Redirect Login
+- Proteksi halaman admin menggunakan filter authentication
+
+Dengan demikian halaman admin menjadi lebih aman karena hanya dapat diakses oleh user yang sudah login.
+
+---
+
 
 # 🔗 Repository GitHub
 
