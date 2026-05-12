@@ -2,10 +2,9 @@
 
 namespace App\Cells;
 
-use CodeIgniter\View\Cell;
 use App\Models\ArtikelModel;
 
-class ArtikelTerkini extends Cell
+class ArtikelTerkini
 {
     public function render()
     {
