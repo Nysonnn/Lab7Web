@@ -424,6 +424,182 @@ Pada praktikum ini berhasil dibuat aplikasi sederhana menggunakan Framework Code
 
 ---
 
+---
+
+# 🚀 Praktikum 3 - View Layout dan View Cell
+
+# 1️⃣ Membuat Layout Utama
+
+Membuat folder layout pada direktori:
+
+```bash
+app/Views/layout
+```
+
+Kemudian membuat file:
+
+```bash
+main.php
+```
+
+Layout digunakan sebagai template utama agar tampilan website lebih rapih dan dapat digunakan ulang pada banyak halaman.
+
+## Screenshot
+![Screenshot Layout Main](screenshots/layout-main.png)
+
+---
+
+# 2️⃣ Mengubah View Menggunakan Layout
+
+Mengubah file view agar menggunakan layout baru dengan method:
+
+```php
+<?= $this->extend('layout/main') ?>
+```
+
+dan:
+
+```php
+<?= $this->section('content') ?>
+```
+
+View yang diubah:
+- about.php
+- contact.php
+- faqs.php
+
+## Screenshot
+![Screenshot About Layout](screenshots/about-layout.png)
+
+---
+
+# 3️⃣ Membuat View Cell
+
+Membuat folder:
+
+```bash
+app/Cells
+```
+
+Kemudian membuat file:
+
+```bash
+ArtikelTerkini.php
+```
+
+View Cell digunakan untuk membuat komponen yang dapat digunakan ulang seperti sidebar dan widget artikel terbaru.
+
+## Screenshot
+![Screenshot Artikel Terkini Cell](screenshots/artikel-terkini-cell.png)
+
+---
+
+# 4️⃣ Membuat View Components
+
+Membuat folder:
+
+```bash
+app/Views/components
+```
+
+Kemudian membuat file:
+
+```bash
+artikel_terkini.php
+```
+
+View component digunakan untuk menampilkan daftar artikel terbaru pada sidebar.
+
+## Screenshot
+![Screenshot Artikel Terkini View](screenshots/artikel-terkini-view.png)
+
+---
+
+# 5️⃣ Menampilkan Layout Website
+
+Menjalankan website menggunakan layout baru yang sudah menggunakan:
+- Navbar
+- Sidebar
+- Widget
+- Artikel terbaru
+
+URL:
+
+```bash
+http://localhost:8080/about
+```
+
+## Screenshot
+![Screenshot Halaman Layout](screenshots/halaman-layout.png)
+
+---
+
+# 6️⃣ Menampilkan Sidebar Widget
+
+Sidebar menampilkan:
+- Artikel terbaru
+- Widget link
+- Widget text
+
+## Screenshot
+![Screenshot Sidebar Widget](screenshots/sidebar-widget.png)
+
+---
+
+# 7️⃣ Menjalankan PHP Spark Serve
+
+Menjalankan server CodeIgniter menggunakan command:
+
+```bash
+php spark serve
+```
+
+## Screenshot
+![Screenshot Spark Serve P3](screenshots/spark-serve-p3.png)
+
+---
+
+# 8️⃣ Menampilkan Routes
+
+Menampilkan route aktif menggunakan command:
+
+```bash
+php spark routes
+```
+
+## Screenshot
+![Screenshot Spark Routes P3](screenshots/spark-routes-p3.png)
+
+---
+
+# 📌 Jawaban Pertanyaan Praktikum
+
+## 1. Apa manfaat utama dari penggunaan View Layout?
+
+View Layout mempermudah pengelolaan tampilan website karena template utama cukup dibuat satu kali dan dapat digunakan ulang pada banyak halaman sehingga kode menjadi lebih rapih dan efisien.
+
+---
+
+## 2. Jelaskan perbedaan antara View Cell dan View biasa.
+
+- View biasa digunakan untuk menampilkan halaman utama website.
+- View Cell digunakan untuk membuat komponen kecil yang reusable seperti sidebar, widget, menu, dan artikel terbaru.
+
+---
+
+## 3. Ubah View Cell agar hanya menampilkan post dengan kategori tertentu.
+
+Contoh query:
+
+```php
+$model->where('kategori', 'Teknologi')->findAll();
+```
+
+Dengan query tersebut View Cell hanya akan menampilkan artikel berdasarkan kategori tertentu.
+
+---
+
+
 # 🔗 Repository GitHub
 
 Tambahkan link repository GitHub di sini.
