@@ -1,6 +1,6 @@
 # Lab7Web
 
-# Praktikum 1 - PHP Framework CodeIgniter 4
+# Praktikum 1 & 2 - PHP Framework CodeIgniter 4
 
 ## Nama  : Nysonnn
 ## Kelas : -
@@ -10,9 +10,15 @@
 
 # 📌 Tujuan Praktikum
 
+## Praktikum 1
 1. Memahami konsep dasar Framework.
 2. Memahami konsep MVC (Model View Controller).
 3. Membuat aplikasi sederhana menggunakan Framework CodeIgniter 4.
+
+## Praktikum 2
+1. Memahami konsep dasar Model.
+2. Memahami konsep dasar CRUD.
+3. Membuat aplikasi CRUD sederhana menggunakan CodeIgniter 4.
 
 ---
 
@@ -25,8 +31,11 @@ Sebelum memulai praktikum, dilakukan persiapan software dan konfigurasi environm
 - Visual Studio Code
 - Git
 - CodeIgniter 4
+- MySQL
 
 ---
+
+# 🚀 Praktikum 1 - Framework CodeIgniter 4
 
 # 1️⃣ Membuat Folder Project
 
@@ -135,41 +144,6 @@ app/Controllers/Page.php
 
 Controller digunakan untuk menghubungkan routing dengan tampilan halaman.
 
-Code:
-
-```php
-<?php
-
-namespace App\Controllers;
-
-class Page extends BaseController
-{
-    public function about()
-    {
-        return view('about', [
-            'title' => 'Halaman About',
-            'content' => 'Ini adalah halaman about.'
-        ]);
-    }
-
-    public function contact()
-    {
-        return view('contact', [
-            'title' => 'Halaman Contact',
-            'content' => 'Ini adalah halaman contact.'
-        ]);
-    }
-
-    public function faqs()
-    {
-        return view('faqs', [
-            'title' => 'Halaman FAQ',
-            'content' => 'Ini adalah halaman FAQ.'
-        ]);
-    }
-}
-```
-
 ## Screenshot
 ![Screenshot Controller](screenshots/controller.png)
 
@@ -257,12 +231,211 @@ Untuk melihat daftar routing yang aktif.
 
 ---
 
+# 🚀 Praktikum 2 - CRUD Artikel
+
+# 1️⃣ Membuat Database
+
+Membuat database baru menggunakan MySQL.
+
+SQL:
+
+```sql
+CREATE DATABASE lab_ci4;
+```
+
+## Screenshot
+![Screenshot Database](screenshots/database.png)
+
+---
+
+# 2️⃣ Membuat Tabel Artikel
+
+Membuat tabel artikel untuk menyimpan data artikel.
+
+SQL:
+
+```sql
+CREATE TABLE artikel (
+    id INT(11) auto_increment,
+    judul VARCHAR(200) NOT NULL,
+    isi TEXT,
+    gambar VARCHAR(200),
+    status TINYINT(1) DEFAULT 0,
+    slug VARCHAR(200),
+    PRIMARY KEY(id)
+);
+```
+
+## Screenshot
+![Screenshot Table Artikel](screenshots/table-artikel.png)
+
+---
+
+# 3️⃣ Menambahkan Data Artikel
+
+Menambahkan data artikel awal ke database.
+
+SQL:
+
+```sql
+INSERT INTO artikel (judul, isi, slug) VALUES
+(
+'Artikel Pertama',
+'Ini isi artikel pertama praktikum CodeIgniter 4',
+'artikel-pertama'
+),
+(
+'Artikel Kedua',
+'Ini isi artikel kedua praktikum CodeIgniter 4',
+'artikel-kedua'
+);
+```
+
+## Screenshot
+![Screenshot Insert Artikel](screenshots/insert-artikel.png)
+
+---
+
+# 4️⃣ Konfigurasi Database
+
+Melakukan konfigurasi database pada file `.env`.
+
+Code:
+
+```ini
+database.default.hostname = localhost
+database.default.database = lab_ci4
+database.default.username = root
+database.default.password =
+database.default.DBDriver = MySQLi
+database.default.port = 3306
+```
+
+## Screenshot
+![Screenshot Database Config](screenshots/db-config.png)
+
+---
+
+# 5️⃣ Membuat Model
+
+Membuat model `ArtikelModel.php`.
+
+Lokasi:
+
+```bash
+app/Models/ArtikelModel.php
+```
+
+Model digunakan untuk menghubungkan aplikasi dengan database.
+
+## Screenshot
+![Screenshot Model](screenshots/model.png)
+
+---
+
+# 6️⃣ Membuat Controller Artikel
+
+Membuat controller `Artikel.php`.
+
+Lokasi:
+
+```bash
+app/Controllers/Artikel.php
+```
+
+Controller digunakan untuk mengambil data artikel dari database.
+
+## Screenshot
+![Screenshot Artikel Controller](screenshots/artikel-controller.png)
+
+---
+
+# 7️⃣ Membuat View Artikel
+
+Membuat halaman tampilan artikel.
+
+Lokasi:
+
+```bash
+app/Views/artikel/index.php
+```
+
+View digunakan untuk menampilkan data artikel dari database.
+
+## Screenshot
+![Screenshot View Artikel](screenshots/view-artikel.png)
+
+---
+
+# 8️⃣ Menambahkan Routing Artikel
+
+Menambahkan route untuk halaman artikel.
+
+Code:
+
+```php
+$routes->get('/artikel', 'Artikel::index');
+```
+
+## Screenshot
+![Screenshot Routes Artikel](screenshots/routes-artikel.png)
+
+---
+
+# 9️⃣ Menampilkan Halaman Artikel
+
+Menjalankan halaman artikel pada browser:
+
+```bash
+http://localhost:8080/artikel
+```
+
+Data artikel berhasil tampil dari database MySQL.
+
+## Screenshot
+![Screenshot Halaman Artikel](screenshots/halaman-artikel.png)
+
+---
+
+# 🔟 Menjalankan PHP Spark Routes
+
+Menampilkan daftar route aktif menggunakan command:
+
+```bash
+php spark routes
+```
+
+## Screenshot
+![Screenshot Spark Routes](screenshots/spark-routes.png)
+
+---
+
 # ✅ Kesimpulan
 
-Pada praktikum ini berhasil dibuat aplikasi sederhana menggunakan Framework CodeIgniter 4 dengan menerapkan konsep MVC (Model View Controller), routing, controller, view, template layout, dan CSS.
+Pada praktikum ini berhasil dibuat aplikasi sederhana menggunakan Framework CodeIgniter 4 dengan menerapkan:
+- MVC (Model View Controller)
+- Routing
+- Controller
+- View
+- Template Layout
+- CSS
+- CRUD sederhana
+- Koneksi Database MySQL
 
 ---
 
 # 🔗 Repository GitHub
 
 Tambahkan link repository GitHub di sini.
+
+Contoh:
+
+```bash
+https://github.com/Nysonnn/Lab7Web
+```
+
+---
+
+# 👨‍💻 Author
+
+Nysonnn
