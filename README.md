@@ -827,6 +827,191 @@ Dengan demikian halaman admin menjadi lebih aman karena hanya dapat diakses oleh
 
 ---
 
+---
+
+# 🚀 Praktikum 5 - Pagination dan Pencarian
+
+# 📌 Tujuan Praktikum
+
+1. Memahami konsep dasar Pagination.
+2. Memahami konsep dasar Pencarian.
+3. Membuat fitur Pagination dan Pencarian menggunakan Framework CodeIgniter 4.
+
+---
+
+# 1️⃣ Membuat Method Admin Index
+
+Membuka file controller:
+
+```bash
+app/Controllers/Artikel.php
+```
+
+Kemudian menambahkan method:
+
+```php
+public function admin_index()
+{
+    $title = 'Daftar Artikel';
+
+    $q = $this->request->getVar('q') ?? '';
+
+    $model = new ArtikelModel();
+
+    $data = [
+        'title'   => $title,
+        'q'       => $q,
+        'artikel' => $model->like('judul', $q)->paginate(10),
+        'pager'   => $model->pager,
+    ];
+
+    return view('artikel/admin_index', $data);
+}
+```
+
+Method ini digunakan untuk:
+- menampilkan data artikel
+- membuat pagination
+- membuat pencarian artikel
+
+## Screenshot
+![Screenshot Pagination Controller](screenshots/pagination-controller.png)
+
+---
+
+# 2️⃣ Membuat Halaman Admin Artikel
+
+Membuat file:
+
+```bash
+app/Views/artikel/admin_index.php
+```
+
+Halaman ini digunakan untuk:
+- menampilkan tabel artikel
+- menampilkan form pencarian
+- menampilkan tombol edit dan hapus
+
+## Screenshot
+![Screenshot Admin Index View](screenshots/admin-index-view.png)
+
+---
+
+# 3️⃣ Membuat Form Pencarian
+
+Menambahkan form pencarian pada halaman admin artikel.
+
+Code:
+
+```php
+<form method="get" class="form-search">
+
+    <input type="text"
+           name="q"
+           value="<?= $q; ?>"
+           placeholder="Cari data">
+
+    <input type="submit"
+           value="Cari"
+           class="btn btn-primary">
+
+</form>
+```
+
+Form digunakan untuk mencari artikel berdasarkan judul.
+
+## Screenshot
+![Screenshot Search Form](screenshots/search-form.png)
+
+---
+
+# 4️⃣ Membuat Pagination
+
+Menambahkan pagination pada halaman admin artikel.
+
+Code:
+
+```php
+<?= $pager->only(['q'])->links(); ?>
+```
+
+Pagination digunakan untuk membatasi jumlah data artikel per halaman.
+
+## Screenshot
+![Screenshot Pagination Links](screenshots/pagination-links.png)
+
+---
+
+# 5️⃣ Menambahkan Data Artikel
+
+Menambahkan banyak data artikel pada database untuk menguji pagination.
+
+Contoh SQL:
+
+```sql
+INSERT INTO artikel (judul, isi, slug)
+VALUES
+('Artikel 3','Isi artikel 3','artikel-3'),
+('Artikel 4','Isi artikel 4','artikel-4'),
+('Artikel 5','Isi artikel 5','artikel-5');
+```
+
+## Screenshot
+![Screenshot Data Artikel Banyak](screenshots/data-artikel-banyak.png)
+
+---
+
+# 6️⃣ Menampilkan Halaman Pagination
+
+Menjalankan halaman admin artikel:
+
+```bash
+http://localhost:8080/admin/artikel
+```
+
+Pagination berhasil tampil dan data artikel dibagi menjadi beberapa halaman.
+
+## Screenshot
+![Screenshot Halaman Pagination](screenshots/halaman-pagination.png)
+
+---
+
+# 7️⃣ Menampilkan Hasil Pencarian
+
+Melakukan pencarian artikel menggunakan keyword tertentu pada form pencarian.
+
+Data artikel berhasil difilter sesuai kata kunci yang dimasukkan.
+
+## Screenshot
+![Screenshot Halaman Search](screenshots/halaman-search.png)
+
+---
+
+# 8️⃣ Menjalankan PHP Spark Serve
+
+Menjalankan server CodeIgniter menggunakan command:
+
+```bash
+php spark serve
+```
+
+## Screenshot
+![Screenshot Spark Serve P5](screenshots/spark-serve-p5.png)
+
+---
+
+# ✅ Kesimpulan Praktikum 5
+
+Pada praktikum ini berhasil dibuat:
+- Pagination data artikel
+- Pencarian artikel
+- Filter data menggunakan keyword
+- Pembagian halaman otomatis menggunakan Pager CodeIgniter 4
+
+Dengan demikian tampilan data menjadi lebih rapih, efisien, dan mudah digunakan ketika jumlah data semakin banyak.
+
+---
+
 
 # 🔗 Repository GitHub
 
