@@ -1981,6 +1981,560 @@ relatif yang kompatibel dengan GitHub README.
 
 ---
 
+# 2️⃣ Membuat Model Kategori
+
+Model baru dibuat pada:
+
+```bash
+app/Models/KategoriModel.php
+```
+
+Field yang dapat disimpan melalui model adalah `nama_kategori` dan `slug_kategori`.
+
+---
+
+# 3️⃣ Memodifikasi Model Artikel
+
+Field `id_kategori` ditambahkan ke `$allowedFields`. Model artikel juga memiliki method
+untuk mengambil artikel beserta kategorinya:
+
+```php
+public function getArtikelDenganKategori(?string $slugKategori = null): array
+{
+    $this->select('artikel.*, kategori.nama_kategori, kategori.slug_kategori')
+        ->join('kategori', 'kategori.id_kategori = artikel.id_kategori', 'left')
+        ->orderBy('artikel.id', 'DESC');
+
+    if ($slugKategori !== null) {
+        $this->where('kategori.slug_kategori', $slugKategori);
+    }
+
+    return $this->findAll();
+}
+```
+
+`LEFT JOIN` digunakan agar artikel tetap dapat ditampilkan meskipun kategorinya belum diisi.
+
+---
+
+# 4️⃣ Menambahkan Seeder Kategori dan Artikel
+
+Seeder berikut menyediakan tiga kategori serta data artikel untuk pengujian:
+
+```bash
+app/Database/Seeds/KategoriArtikelSeeder.php
+```
+
+Menjalankan seeder:
+
+```bash
+php spark db:seed KategoriArtikelSeeder
+```
+
+Kategori yang dibuat adalah **Teknologi**, **Pemrograman**, dan **Pendidikan**.
+
+---
+
+# 5️⃣ Memodifikasi Controller Artikel
+
+Controller `Artikel` diperbarui untuk menangani:
+
+- daftar artikel beserta nama kategori;
+- filter judul dan kategori pada halaman admin;
+- pagination dengan parameter filter tetap tersimpan;
+- tambah, edit, dan hapus artikel;
+- halaman detail yang menampilkan nama kategori;
+- daftar artikel berdasarkan kategori tertentu.
+
+Query admin dibangun menggunakan `select()`, `join()`, `like()`, `where()`, dan
+`paginate()` dari CodeIgniter 4 Query Builder.
+
+---
+
+# 6️⃣ Membuat Filter Kategori di Halaman Admin
+
+Form admin memiliki input pencarian dan dropdown kategori. Parameter keduanya tetap
+dibawa saat pengguna berpindah halaman:
+
+```php
+<?= $pager->only(['q', 'kategori_id'])->links('artikel'); ?>
+```
+
+## Screenshot
+
+![Filter kategori halaman admin](screenshots/praktikum6-admin-filter-kategori.png)
+
+---
+
+# 7️⃣ Menampilkan Kategori pada Halaman Artikel
+
+Halaman publik menampilkan badge kategori pada setiap artikel dan tombol filter untuk
+membuka artikel berdasarkan kategori.
+
+Route tambahan:
+
+```php
+$routes->get('/kategori/(:segment)', 'Artikel::kategori/$1');
+```
+
+## Screenshot
+
+![Daftar artikel dengan kategori](screenshots/praktikum6-artikel-kategori.png)
+
+---
+
+# 8️⃣ Membuat Form Tambah, Edit, dan Detail Artikel
+
+View berikut ditambahkan:
+
+```text
+app/Views/artikel/form_add.php
+app/Views/artikel/form_edit.php
+app/Views/artikel/detail.php
+```
+
+Form tambah dan edit menyediakan pilihan kategori serta status artikel. Halaman detail
+menampilkan nama kategori dari hasil join tabel.
+
+---
+
+# 9️⃣ Hasil Pengujian
+
+Pengujian dilakukan pada server lokal CodeIgniter 4 dan database MySQL `lab_ci4`.
+
+| Fitur | Hasil |
+|---|---|
+| Login admin | Berhasil |
+| Menampilkan artikel dan kategori | Berhasil |
+| Pencarian dan filter kategori | Berhasil |
+| Pagination | Berhasil |
+| Tambah artikel | Berhasil |
+| Edit artikel dan ganti kategori | Berhasil |
+| Detail artikel berkategori | Berhasil |
+| Hapus artikel | Berhasil |
+
+Semua endpoint yang diuji memberikan respons HTTP `200`, dan hasil operasi CRUD telah
+diverifikasi langsung pada database.
+
+---
+
+# ✅ Kesimpulan Praktikum 6
+
+Pada praktikum ini berhasil dibuat relasi One-to-Many antara tabel `kategori` dan
+`artikel`. Data dari kedua tabel dapat digabungkan dengan Query Builder, kemudian
+ditampilkan pada halaman publik dan admin. Fitur pencarian, filter kategori, pagination,
+CRUD, detail artikel, dan daftar artikel per kategori juga telah berjalan dengan baik.
+
+---
+
+1. Memahami konsep dasar file upload pada aplikasi web.
+2. Membuat fitur upload gambar menggunakan CodeIgniter 4.
+3. Memvalidasi file gambar sebelum disimpan.
+4. Menampilkan gambar pada daftar dan detail artikel.
+
+---
+
+# 1️⃣ Menyiapkan Folder Upload
+
+Folder berikut digunakan untuk menyimpan gambar artikel:
+
+```bash
+public/gambar
+```
+
+File `.gitignore` disimpan di dalam folder agar direktori tetap tersedia setelah project
+di-clone, sedangkan file upload pengguna tidak ikut masuk ke repository.
+
+---
+
+# 2️⃣ Menambahkan Validasi Gambar
+
+Method `add()` pada controller `Artikel` ditambahkan aturan validasi berikut:
+
+```php
+'gambar' => 'uploaded[gambar]
+    |is_image[gambar]
+    |mime_in[gambar,image/jpg,image/jpeg,image/png,image/gif,image/webp]
+    |max_size[gambar,2048]',
+```
+
+Validasi memastikan file wajib diunggah, benar-benar berupa gambar, memiliki format yang
+diizinkan, dan ukurannya tidak lebih dari 2 MB.
+
+---
+
+# 3️⃣ Menyimpan File dengan Nama Acak
+
+File yang lolos validasi dipindahkan ke folder `public/gambar`. Nama file dibuat secara
+acak agar tidak menimpa gambar lain dan tidak menggunakan nama asli dari pengguna.
+
+```php
+$fileName = $file->getRandomName();
+$file->move(FCPATH . 'gambar', $fileName);
+```
+
+Nama tersebut kemudian disimpan pada kolom `gambar` di tabel `artikel`.
+
+---
+
+# 4️⃣ Menambahkan Input File pada Form
+
+Tag form tambah artikel diubah agar mendukung pengiriman file:
+
+```php
+<form action="" method="post" enctype="multipart/form-data">
+```
+
+Field gambar yang ditambahkan:
+
+```php
+<input type="file"
+       name="gambar"
+       id="gambar"
+       accept="image/png,image/jpeg,image/gif,image/webp"
+       required>
+```
+
+## Screenshot
+
+![Form upload gambar artikel](screenshots/praktikum7-form-upload.png)
+
+---
+
+# 5️⃣ Mengganti Gambar Saat Edit Artikel
+
+Form edit artikel juga menggunakan `multipart/form-data`. Upload gambar pada form edit
+bersifat opsional:
+
+- jika tidak memilih file baru, gambar lama tetap digunakan;
+- jika memilih gambar baru, file baru divalidasi dan disimpan;
+- setelah update berhasil, file gambar lama otomatis dihapus.
+
+Preview gambar lama ditampilkan agar administrator dapat melihat gambar yang sedang
+digunakan.
+
+---
+
+# 6️⃣ Menghapus File Bersama Artikel
+
+Method `delete()` diperbarui agar gambar pada folder `public/gambar` ikut dihapus setelah
+record artikel berhasil dihapus. Nama file diamankan menggunakan `basename()` sebelum
+diakses dari filesystem.
+
+---
+
+# 7️⃣ Menampilkan Gambar Artikel
+
+View daftar artikel dan detail artikel menampilkan gambar dari folder publik:
+
+```php
+<img src="<?= base_url('/gambar/' . $artikel['gambar']); ?>"
+     alt="<?= esc($artikel['judul']); ?>">
+```
+
+## Screenshot
+
+![Hasil upload gambar pada detail artikel](screenshots/praktikum7-hasil-upload.png)
+
+---
+
+# 8️⃣ Hasil Pengujian
+
+| Pengujian | Hasil |
+|---|---|
+| File teks/non-gambar ditolak | Berhasil |
+| Gambar PNG valid disimpan | Berhasil |
+| Nama file dibuat acak | Berhasil |
+| Nama file tersimpan di database | Berhasil |
+| Gambar tampil pada detail artikel | Berhasil |
+| Gambar dapat diganti saat edit | Berhasil |
+| File gambar lama terhapus setelah diganti | Berhasil |
+| File gambar terhapus bersama artikel | Berhasil |
+
+Pengujian dilakukan melalui request `multipart/form-data` pada server lokal dan hasilnya
+diverifikasi langsung pada database serta folder `public/gambar`.
+
+---
+
+# ✅ Kesimpulan Praktikum 7
+
+Pada praktikum ini berhasil dibuat fitur upload gambar artikel menggunakan CodeIgniter 4.
+File gambar divalidasi berdasarkan tipe MIME, ekstensi gambar, dan ukuran maksimal. File
+disimpan menggunakan nama acak, dapat diganti pada proses edit, ditampilkan pada halaman
+artikel, dan dibersihkan secara otomatis ketika tidak lagi digunakan.
+
+---
+
+
+jQuery 3.6.0 disimpan secara lokal pada:
+
+```bash
+public/assets/js/jquery-3.6.0.min.js
+```
+
+Pustaka dimuat dari view AJAX menggunakan `base_url()`:
+
+```php
+<script src="<?= base_url('assets/js/jquery-3.6.0.min.js'); ?>"></script>
+```
+
+---
+
+# 2️⃣ Membuat AJAX Controller
+
+Controller baru dibuat pada:
+
+```bash
+app/Controllers/AjaxController.php
+```
+
+Controller menyediakan response JSON yang konsisten untuk operasi berikut:
+
+| Method | Endpoint | Fungsi |
+|---|---|---|
+| `GET` | `/ajax/getData` | Mengambil seluruh artikel dan kategori |
+| `POST` | `/ajax/create` | Menambahkan artikel |
+| `PUT` | `/ajax/update/{id}` | Memperbarui artikel |
+| `DELETE` | `/ajax/delete/{id}` | Menghapus artikel |
+
+Contoh response berhasil:
+
+```json
+{
+  "status": "OK",
+  "message": "Artikel berhasil diperbarui tanpa reload halaman."
+}
+```
+
+Request yang tidak lolos validasi memperoleh response HTTP `422` beserta daftar error.
+
+---
+
+# 3️⃣ Menambahkan Route AJAX
+
+Seluruh route AJAX dilindungi filter `auth`, sehingga hanya administrator yang sudah login
+yang dapat melihat atau mengubah data.
+
+```php
+$routes->group('ajax', ['filter' => 'auth'], function ($routes) {
+    $routes->get('', 'AjaxController::index');
+    $routes->get('getData', 'AjaxController::getData');
+    $routes->post('create', 'AjaxController::create');
+    $routes->put('update/(:num)', 'AjaxController::update/$1');
+    $routes->delete('delete/(:num)', 'AjaxController::delete/$1');
+});
+```
+
+---
+
+# 4️⃣ Membuat View Data Artikel AJAX
+
+View AJAX dibuat pada:
+
+```bash
+app/Views/ajax/index.php
+```
+
+Ketika halaman dibuka, jQuery mengirim request `GET` ke `/ajax/getData`. Data JSON yang
+diterima kemudian dirender ke dalam tabel tanpa reload halaman.
+
+```javascript
+function loadData() {
+    $.getJSON(urls.data)
+        .done(function (response) {
+            renderRows(response.data || []);
+        });
+}
+```
+
+## Screenshot
+
+![Tabel artikel dari AJAX](screenshots/praktikum8-tabel-ajax.png)
+
+---
+
+# 5️⃣ Menambahkan Form Tambah dan Ubah AJAX
+
+Satu form digunakan untuk dua operasi. Jika ID kosong, data dikirim dengan method `POST`.
+Jika ID terisi dari tombol **Ubah**, data dikirim dengan method `PUT`.
+
+```javascript
+const id = $('#artikelId').val();
+
+$.ajax({
+    url: id ? `${urls.update}/${id}` : urls.create,
+    method: id ? 'PUT' : 'POST',
+    data: $('#ajaxArtikelForm').serialize(),
+    dataType: 'json'
+});
+```
+
+## Screenshot
+
+![Form tambah artikel AJAX](screenshots/praktikum8-form-ajax.png)
+
+---
+
+# 6️⃣ Menambahkan Hapus Data AJAX
+
+Tombol hapus menampilkan konfirmasi, lalu mengirim request `DELETE`. Setelah server
+memberikan response berhasil, fungsi `loadData()` dipanggil kembali agar tabel langsung
+menampilkan data terbaru tanpa reload halaman penuh.
+
+---
+
+# 7️⃣ Keamanan dan Penanganan Error
+
+Implementasi AJAX dilengkapi dengan:
+
+- filter autentikasi pada seluruh endpoint;
+- validasi server-side untuk judul, isi, kategori, dan status;
+- response HTTP `404` untuk artikel yang tidak ditemukan;
+- escaping data sebelum dimasukkan ke HTML untuk mencegah XSS;
+- pesan sukses atau error yang diperbarui secara asynchronous;
+- pembersihan file gambar jika artikel bergambar dihapus melalui AJAX.
+
+---
+
+# 8️⃣ Hasil Pengujian
+
+| Pengujian | HTTP | Hasil |
+|---|---:|---|
+| Membuka halaman AJAX | `200` | Berhasil |
+| Mengambil data JSON | `200` | Berhasil |
+| Mengirim data tidak valid | `422` | Berhasil ditolak |
+| Menambah artikel | `201` | Berhasil |
+| Mengubah artikel dengan PUT | `200` | Berhasil |
+| Menghapus artikel dengan DELETE | `200` | Berhasil |
+| Memastikan record terhapus dari database | - | Berhasil |
+
+Pengujian juga memastikan tabel terisi oleh JavaScript setelah halaman dibuka dan form
+tambah dapat muncul tanpa navigasi ke halaman lain.
+
+---
+
+# 9️⃣ Perbaikan Screenshot README
+
+Audit seluruh link gambar pada README menemukan dua referensi lama yang tidak memiliki
+file. Link tersebut diperbaiki menjadi:
+
+- `screenshots/spark-routes-p3.png` untuk screenshot route artikel;
+- `screenshots/spark-server-p3.png` untuk screenshot server Praktikum 3.
+
+Setelah perbaikan, semua path screenshot pada README memiliki file yang sesuai dan
+kapitalisasi nama yang tepat untuk GitHub.
+
+---
+
+# ✅ Kesimpulan Praktikum 8
+
+Pada praktikum ini berhasil dibuat halaman pengelolaan artikel menggunakan AJAX dan
+jQuery. Data dapat diambil, ditambah, diubah, dan dihapus secara asynchronous. Response
+JSON, validasi, status HTTP, autentikasi, dan escaping output membuat implementasi lebih
+aman serta mudah di-debug.
+
+---
+
+# Praktikum 9 - AJAX Pagination dan Search
+
+# Tujuan Praktikum
+
+1. Membuat pagination artikel yang berjalan secara asynchronous.
+2. Menambahkan live search dan filter kategori tanpa reload halaman.
+3. Menambahkan sorting artikel berdasarkan ID, judul, kategori, atau status.
+4. Memberikan loading indicator dan informasi jumlah data untuk pengalaman pengguna yang lebih baik.
+
+---
+
+# 1. Memperbarui Controller Artikel
+
+Method `admin_index()` pada `app/Controllers/Artikel.php` menerima parameter berikut:
+
+| Parameter | Fungsi |
+|---|---|
+| `q` | Mencari judul artikel |
+| `kategori_id` | Memfilter kategori |
+| `page` | Menentukan halaman aktif |
+| `sort` | Menentukan kolom sorting |
+| `direction` | Menentukan arah `ASC` atau `DESC` |
+
+Kolom sorting dipetakan melalui whitelist agar nama kolom yang dikirim pengguna tidak
+langsung dimasukkan ke query. Query tetap menggunakan relasi kategori dan pagination
+CodeIgniter:
+
+```php
+$artikel = $model->paginate(10, 'artikel', $page);
+
+if ($this->request->isAJAX()) {
+    return $this->response->setJSON([
+        'status'  => 'OK',
+        'artikel' => $artikel,
+        'filters' => $filters,
+        'pager'   => $pagerData,
+    ]);
+}
+```
+
+Request biasa tetap menampilkan view HTML sebagai fallback, sedangkan request AJAX
+menerima data artikel, filter aktif, dan metadata pagination dalam format JSON.
+
+---
+
+# 2. Membuat Pagination AJAX
+
+View `app/Views/artikel/admin_index.php` memuat jQuery lokal dan mengirim request `GET`
+ke `/admin/artikel`. Tabel serta tombol pagination dibuat ulang dari response JSON tanpa
+reload halaman penuh.
+
+```javascript
+$.ajax({
+    url: endpoint,
+    method: 'GET',
+    data: queryData(page),
+    dataType: 'json',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+});
+```
+
+URL browser ikut diperbarui menggunakan `history.replaceState()`, sehingga filter dan
+halaman aktif tetap terlihat pada query string.
+
+## Screenshot
+
+![Daftar artikel dengan pagination AJAX](images/praktikum9-ajax-pagination.png)
+
+![Halaman kedua pagination AJAX](images/praktikum9-ajax-page-2.png)
+
+---
+
+# 3. Menambahkan Live Search dan Filter Kategori
+
+Input pencarian menggunakan debounce 350 milidetik agar request tidak dikirim pada setiap
+penekanan tombol secara berlebihan. Perubahan kategori langsung memuat data baru dan
+mengembalikan pagination ke halaman pertama.
+
+Data artikel yang diterima selalu di-escape sebelum dimasukkan ke tabel untuk mencegah
+HTML dari database dijalankan pada browser.
+
+---
+
+# 4. Menambahkan Sorting AJAX
+
+Artikel dapat diurutkan berdasarkan:
+
+- ID;
+- judul;
+- kategori;
+- status;
+- arah naik (`ASC`) atau turun (`DESC`).
+
+Perubahan pilihan sorting langsung menjalankan request AJAX. Screenshot berikut
+menunjukkan pencarian `CodeIgniter` yang diurutkan berdasarkan judul secara ascending.
+
+## Screenshot
+
+![Live search dan sorting AJAX](images/praktikum9-ajax-search-sort.png)
+
 
 # 🔗 Repository GitHub
 
