@@ -18,7 +18,7 @@ $kategoriTerpilih = $input['id_kategori'] ?? $artikel['id_kategori'];
 $status = $input['status'] ?? $artikel['status'];
 ?>
 
-<form action="" method="post" class="article-form">
+<form action="" method="post" enctype="multipart/form-data" class="article-form">
     <?= csrf_field(); ?>
     <div class="field">
         <label for="judul">Judul</label>
@@ -27,6 +27,15 @@ $status = $input['status'] ?? $artikel['status'];
     <div class="field">
         <label for="isi">Isi</label>
         <textarea name="isi" id="isi" rows="9" required><?= esc($isi); ?></textarea>
+    </div>
+    <div class="field">
+        <label for="gambar">Ganti Gambar Artikel</label>
+        <?php if (! empty($artikel['gambar'])): ?>
+            <img class="image-preview" src="<?= base_url('/gambar/' . $artikel['gambar']); ?>"
+                 alt="Gambar <?= esc($artikel['judul']); ?>">
+        <?php endif; ?>
+        <input type="file" name="gambar" id="gambar" accept="image/png,image/jpeg,image/gif,image/webp">
+        <small class="field-help">Kosongkan jika gambar lama tetap digunakan. Maksimal 2 MB.</small>
     </div>
     <div class="form-grid">
         <div class="field">

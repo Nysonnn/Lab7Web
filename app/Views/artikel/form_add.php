@@ -11,7 +11,7 @@
     </div>
 <?php endif; ?>
 
-<form action="" method="post" class="article-form">
+<form action="" method="post" enctype="multipart/form-data" class="article-form">
     <?= csrf_field(); ?>
     <div class="field">
         <label for="judul">Judul</label>
@@ -20,6 +20,11 @@
     <div class="field">
         <label for="isi">Isi</label>
         <textarea name="isi" id="isi" rows="9" required><?= esc($input['isi'] ?? ''); ?></textarea>
+    </div>
+    <div class="field">
+        <label for="gambar">Gambar Artikel</label>
+        <input type="file" name="gambar" id="gambar" accept="image/png,image/jpeg,image/gif,image/webp" required>
+        <small class="field-help">Format JPG, PNG, GIF, atau WebP. Ukuran maksimal 2 MB.</small>
     </div>
     <div class="form-grid">
         <div class="field">

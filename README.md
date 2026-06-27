@@ -1194,6 +1194,148 @@ CRUD, detail artikel, dan daftar artikel per kategori juga telah berjalan dengan
 
 ---
 
+# 🚀 Praktikum 7 - Upload File Gambar
+
+# 📌 Tujuan Praktikum
+
+1. Memahami konsep dasar file upload pada aplikasi web.
+2. Membuat fitur upload gambar menggunakan CodeIgniter 4.
+3. Memvalidasi file gambar sebelum disimpan.
+4. Menampilkan gambar pada daftar dan detail artikel.
+
+---
+
+# 1️⃣ Menyiapkan Folder Upload
+
+Folder berikut digunakan untuk menyimpan gambar artikel:
+
+```bash
+public/gambar
+```
+
+File `.gitignore` disimpan di dalam folder agar direktori tetap tersedia setelah project
+di-clone, sedangkan file upload pengguna tidak ikut masuk ke repository.
+
+---
+
+# 2️⃣ Menambahkan Validasi Gambar
+
+Method `add()` pada controller `Artikel` ditambahkan aturan validasi berikut:
+
+```php
+'gambar' => 'uploaded[gambar]
+    |is_image[gambar]
+    |mime_in[gambar,image/jpg,image/jpeg,image/png,image/gif,image/webp]
+    |max_size[gambar,2048]',
+```
+
+Validasi memastikan file wajib diunggah, benar-benar berupa gambar, memiliki format yang
+diizinkan, dan ukurannya tidak lebih dari 2 MB.
+
+---
+
+# 3️⃣ Menyimpan File dengan Nama Acak
+
+File yang lolos validasi dipindahkan ke folder `public/gambar`. Nama file dibuat secara
+acak agar tidak menimpa gambar lain dan tidak menggunakan nama asli dari pengguna.
+
+```php
+$fileName = $file->getRandomName();
+$file->move(FCPATH . 'gambar', $fileName);
+```
+
+Nama tersebut kemudian disimpan pada kolom `gambar` di tabel `artikel`.
+
+---
+
+# 4️⃣ Menambahkan Input File pada Form
+
+Tag form tambah artikel diubah agar mendukung pengiriman file:
+
+```php
+<form action="" method="post" enctype="multipart/form-data">
+```
+
+Field gambar yang ditambahkan:
+
+```php
+<input type="file"
+       name="gambar"
+       id="gambar"
+       accept="image/png,image/jpeg,image/gif,image/webp"
+       required>
+```
+
+## Screenshot
+
+![Form upload gambar artikel](screenshots/praktikum7-form-upload.png)
+
+---
+
+# 5️⃣ Mengganti Gambar Saat Edit Artikel
+
+Form edit artikel juga menggunakan `multipart/form-data`. Upload gambar pada form edit
+bersifat opsional:
+
+- jika tidak memilih file baru, gambar lama tetap digunakan;
+- jika memilih gambar baru, file baru divalidasi dan disimpan;
+- setelah update berhasil, file gambar lama otomatis dihapus.
+
+Preview gambar lama ditampilkan agar administrator dapat melihat gambar yang sedang
+digunakan.
+
+---
+
+# 6️⃣ Menghapus File Bersama Artikel
+
+Method `delete()` diperbarui agar gambar pada folder `public/gambar` ikut dihapus setelah
+record artikel berhasil dihapus. Nama file diamankan menggunakan `basename()` sebelum
+diakses dari filesystem.
+
+---
+
+# 7️⃣ Menampilkan Gambar Artikel
+
+View daftar artikel dan detail artikel menampilkan gambar dari folder publik:
+
+```php
+<img src="<?= base_url('/gambar/' . $artikel['gambar']); ?>"
+     alt="<?= esc($artikel['judul']); ?>">
+```
+
+## Screenshot
+
+![Hasil upload gambar pada detail artikel](screenshots/praktikum7-hasil-upload.png)
+
+---
+
+# 8️⃣ Hasil Pengujian
+
+| Pengujian | Hasil |
+|---|---|
+| File teks/non-gambar ditolak | Berhasil |
+| Gambar PNG valid disimpan | Berhasil |
+| Nama file dibuat acak | Berhasil |
+| Nama file tersimpan di database | Berhasil |
+| Gambar tampil pada detail artikel | Berhasil |
+| Gambar dapat diganti saat edit | Berhasil |
+| File gambar lama terhapus setelah diganti | Berhasil |
+| File gambar terhapus bersama artikel | Berhasil |
+
+Pengujian dilakukan melalui request `multipart/form-data` pada server lokal dan hasilnya
+diverifikasi langsung pada database serta folder `public/gambar`.
+
+---
+
+# ✅ Kesimpulan Praktikum 7
+
+Pada praktikum ini berhasil dibuat fitur upload gambar artikel menggunakan CodeIgniter 4.
+File gambar divalidasi berdasarkan tipe MIME, ekstensi gambar, dan ukuran maksimal. File
+disimpan menggunakan nama acak, dapat diganti pada proses edit, ditampilkan pada halaman
+artikel, dan dibersihkan secara otomatis ketika tidak lagi digunakan.
+
+---
+
 
 # 🔗 Repository GitHub
 

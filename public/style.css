@@ -85,6 +85,7 @@ a:hover { color: var(--blue-dark); }
 .entry h3 a { color: var(--navy); }
 .entry p { margin: 0 0 10px; color: var(--muted); }
 .read-more { font-size: .9rem; font-weight: 800; }
+.entry img, .article-detail img { width: 100%; max-height: 420px; margin: 14px 0; border-radius: 12px; object-fit: cover; }
 
 .badge { display: inline-flex; padding: 4px 9px; color: #1d4ed8; background: #dbeafe; border-radius: 999px; font-size: .75rem; font-weight: 800; }
 .status { display: inline-flex; padding: 4px 9px; border-radius: 999px; font-size: .75rem; font-weight: 800; }
@@ -97,6 +98,8 @@ a:hover { color: var(--blue-dark); }
 .field label { color: #334155; font-size: .86rem; font-weight: 800; }
 input, textarea, select { width: 100%; padding: 10px 12px; color: var(--ink); background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
 input:focus, textarea:focus, select:focus { outline: 3px solid #dbeafe; border-color: var(--blue); }
+.field-help { color: var(--muted); font-size: .8rem; }
+.image-preview { width: min(320px, 100%); max-height: 190px; border: 1px solid var(--line); border-radius: 10px; object-fit: cover; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border: 0; border-radius: 8px; font: inherit; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .btn-primary { color: #fff; background: var(--blue); }
