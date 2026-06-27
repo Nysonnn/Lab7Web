@@ -25,3 +25,11 @@ $routes->group('admin', ['filter' => 'auth'], function($routes) {
     $routes->match(['GET', 'POST'], 'artikel/edit/(:num)', 'Artikel::edit/$1');
     $routes->get('artikel/delete/(:num)', 'Artikel::delete/$1');
 });
+
+$routes->group('ajax', ['filter' => 'auth'], function($routes) {
+    $routes->get('', 'AjaxController::index');
+    $routes->get('getData', 'AjaxController::getData');
+    $routes->post('create', 'AjaxController::create');
+    $routes->put('update/(:num)', 'AjaxController::update/$1');
+    $routes->delete('delete/(:num)', 'AjaxController::delete/$1');
+});

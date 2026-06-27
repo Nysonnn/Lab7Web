@@ -378,7 +378,7 @@ $routes->get('/artikel', 'Artikel::index');
 ```
 
 ## Screenshot
-![Screenshot Routes Artikel](screenshots/routes-artikel.png)
+![Screenshot Routes Artikel](screenshots/spark-routes-p3.png)
 
 ---
 
@@ -555,7 +555,7 @@ php spark serve
 ```
 
 ## Screenshot
-![Screenshot Spark Serve P3](screenshots/spark-serve-p3.png)
+![Screenshot Spark Serve P3](screenshots/spark-server-p3.png)
 
 ---
 
@@ -1333,6 +1333,188 @@ Pada praktikum ini berhasil dibuat fitur upload gambar artikel menggunakan CodeI
 File gambar divalidasi berdasarkan tipe MIME, ekstensi gambar, dan ukuran maksimal. File
 disimpan menggunakan nama acak, dapat diganti pada proses edit, ditampilkan pada halaman
 artikel, dan dibersihkan secara otomatis ketika tidak lagi digunakan.
+
+---
+
+# 🚀 Praktikum 8 - AJAX
+
+# 📌 Tujuan Praktikum
+
+1. Memahami konsep AJAX dan alur request asynchronous.
+2. Mengambil data artikel dalam format JSON tanpa reload halaman.
+3. Menambahkan fungsi tambah, ubah, dan hapus menggunakan AJAX.
+4. Menampilkan status request dan error validasi secara dinamis.
+
+---
+
+# 1️⃣ Menambahkan Pustaka jQuery
+
+jQuery 3.6.0 disimpan secara lokal pada:
+
+```bash
+public/assets/js/jquery-3.6.0.min.js
+```
+
+Pustaka dimuat dari view AJAX menggunakan `base_url()`:
+
+```php
+<script src="<?= base_url('assets/js/jquery-3.6.0.min.js'); ?>"></script>
+```
+
+---
+
+# 2️⃣ Membuat AJAX Controller
+
+Controller baru dibuat pada:
+
+```bash
+app/Controllers/AjaxController.php
+```
+
+Controller menyediakan response JSON yang konsisten untuk operasi berikut:
+
+| Method | Endpoint | Fungsi |
+|---|---|---|
+| `GET` | `/ajax/getData` | Mengambil seluruh artikel dan kategori |
+| `POST` | `/ajax/create` | Menambahkan artikel |
+| `PUT` | `/ajax/update/{id}` | Memperbarui artikel |
+| `DELETE` | `/ajax/delete/{id}` | Menghapus artikel |
+
+Contoh response berhasil:
+
+```json
+{
+  "status": "OK",
+  "message": "Artikel berhasil diperbarui tanpa reload halaman."
+}
+```
+
+Request yang tidak lolos validasi memperoleh response HTTP `422` beserta daftar error.
+
+---
+
+# 3️⃣ Menambahkan Route AJAX
+
+Seluruh route AJAX dilindungi filter `auth`, sehingga hanya administrator yang sudah login
+yang dapat melihat atau mengubah data.
+
+```php
+$routes->group('ajax', ['filter' => 'auth'], function ($routes) {
+    $routes->get('', 'AjaxController::index');
+    $routes->get('getData', 'AjaxController::getData');
+    $routes->post('create', 'AjaxController::create');
+    $routes->put('update/(:num)', 'AjaxController::update/$1');
+    $routes->delete('delete/(:num)', 'AjaxController::delete/$1');
+});
+```
+
+---
+
+# 4️⃣ Membuat View Data Artikel AJAX
+
+View AJAX dibuat pada:
+
+```bash
+app/Views/ajax/index.php
+```
+
+Ketika halaman dibuka, jQuery mengirim request `GET` ke `/ajax/getData`. Data JSON yang
+diterima kemudian dirender ke dalam tabel tanpa reload halaman.
+
+```javascript
+function loadData() {
+    $.getJSON(urls.data)
+        .done(function (response) {
+            renderRows(response.data || []);
+        });
+}
+```
+
+## Screenshot
+
+![Tabel artikel dari AJAX](screenshots/praktikum8-tabel-ajax.png)
+
+---
+
+# 5️⃣ Menambahkan Form Tambah dan Ubah AJAX
+
+Satu form digunakan untuk dua operasi. Jika ID kosong, data dikirim dengan method `POST`.
+Jika ID terisi dari tombol **Ubah**, data dikirim dengan method `PUT`.
+
+```javascript
+const id = $('#artikelId').val();
+
+$.ajax({
+    url: id ? `${urls.update}/${id}` : urls.create,
+    method: id ? 'PUT' : 'POST',
+    data: $('#ajaxArtikelForm').serialize(),
+    dataType: 'json'
+});
+```
+
+## Screenshot
+
+![Form tambah artikel AJAX](screenshots/praktikum8-form-ajax.png)
+
+---
+
+# 6️⃣ Menambahkan Hapus Data AJAX
+
+Tombol hapus menampilkan konfirmasi, lalu mengirim request `DELETE`. Setelah server
+memberikan response berhasil, fungsi `loadData()` dipanggil kembali agar tabel langsung
+menampilkan data terbaru tanpa reload halaman penuh.
+
+---
+
+# 7️⃣ Keamanan dan Penanganan Error
+
+Implementasi AJAX dilengkapi dengan:
+
+- filter autentikasi pada seluruh endpoint;
+- validasi server-side untuk judul, isi, kategori, dan status;
+- response HTTP `404` untuk artikel yang tidak ditemukan;
+- escaping data sebelum dimasukkan ke HTML untuk mencegah XSS;
+- pesan sukses atau error yang diperbarui secara asynchronous;
+- pembersihan file gambar jika artikel bergambar dihapus melalui AJAX.
+
+---
+
+# 8️⃣ Hasil Pengujian
+
+| Pengujian | HTTP | Hasil |
+|---|---:|---|
+| Membuka halaman AJAX | `200` | Berhasil |
+| Mengambil data JSON | `200` | Berhasil |
+| Mengirim data tidak valid | `422` | Berhasil ditolak |
+| Menambah artikel | `201` | Berhasil |
+| Mengubah artikel dengan PUT | `200` | Berhasil |
+| Menghapus artikel dengan DELETE | `200` | Berhasil |
+| Memastikan record terhapus dari database | - | Berhasil |
+
+Pengujian juga memastikan tabel terisi oleh JavaScript setelah halaman dibuka dan form
+tambah dapat muncul tanpa navigasi ke halaman lain.
+
+---
+
+# 9️⃣ Perbaikan Screenshot README
+
+Audit seluruh link gambar pada README menemukan dua referensi lama yang tidak memiliki
+file. Link tersebut diperbaiki menjadi:
+
+- `screenshots/spark-routes-p3.png` untuk screenshot route artikel;
+- `screenshots/spark-server-p3.png` untuk screenshot server Praktikum 3.
+
+Setelah perbaikan, semua path screenshot pada README memiliki file yang sesuai dan
+kapitalisasi nama yang tepat untuk GitHub.
+
+---
+
+# ✅ Kesimpulan Praktikum 8
+
+Pada praktikum ini berhasil dibuat halaman pengelolaan artikel menggunakan AJAX dan
+jQuery. Data dapat diambil, ditambah, diubah, dan dihapus secara asynchronous. Response
+JSON, validasi, status HTTP, autentikasi, dan escaping output membuat implementasi lebih
+aman serta mudah di-debug.
 
 ---
 

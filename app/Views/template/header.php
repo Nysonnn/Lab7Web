@@ -21,6 +21,7 @@
         <a href="<?= base_url('/contact'); ?>">Contact</a>
         <a href="<?= base_url('/faqs'); ?>">FAQ</a>
         <a href="<?= base_url('/admin/artikel'); ?>">Admin</a>
+        <a href="<?= base_url('/ajax'); ?>">AJAX</a>
     </nav>
 
     <div id="wrapper">
