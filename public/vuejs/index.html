@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab11Web VueJS SPA</title>
+    <link rel="stylesheet" href="assets/css/style.css?v=14">
+</head>
+<body>
+    <div id="app" v-cloak>
+        <header class="app-header">
+            <div>
+                <p class="eyebrow">Pemrograman Web 2</p>
+                <h1>Lab11Web VueJS SPA</h1>
+                <p class="subtitle">REST API, Vue Router, Navigation Guards, dan Token Security</p>
+            </div>
+            <div class="user-pill" v-if="isLoggedIn">{{ currentUser || 'Administrator' }}</div>
+        </header>
+
+        <nav class="nav-menu" aria-label="Navigasi SPA">
+            <router-link to="/">Beranda</router-link>
+            <router-link to="/api-docs">REST API</router-link>
+            <router-link to="/artikel">Kelola Artikel</router-link>
+            <router-link to="/about">About</router-link>
+            <router-link to="/security">API Security</router-link>
+            <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
+            <a v-else href="#" @click.prevent="logout">Logout</a>
+        </nav>
+
+        <main class="page-content"><router-view></router-view></main>
+        <div class="modal" v-if="showLogoutConfirm" @click.self="showLogoutConfirm = false">
+            <div class="modal-content confirm-box">
+                <span class="section-label">Konfirmasi</span>
+                <h3>Keluar dari aplikasi?</h3>
+                <p>Token autentikasi akan dihapus dari browser.</p>
+                <div class="form-actions">
+                    <button class="btn danger" type="button" @click="confirmLogout">Ya, Logout</button>
+                    <button class="btn secondary" type="button" @click="showLogoutConfirm = false">Batal</button>
+                </div>
+            </div>
+        </div>
+        <footer class="app-footer">Praktikum 10–14 · CodeIgniter 4 + VueJS 3</footer>
+    </div>
+
+    <script src="assets/vendor/vue.global.prod.js"></script>
+    <script src="assets/vendor/vue-router.global.prod.js"></script>
+    <script src="assets/vendor/axios.min.js"></script>
+    <script src="assets/js/components/Home.js?v=14"></script>
+    <script src="assets/js/components/About.js?v=14"></script>
+    <script src="assets/js/components/Login.js?v=14"></script>
+    <script src="assets/js/components/Artikel.js?v=14"></script>
+    <script src="assets/js/components/ApiDocs.js?v=14"></script>
+    <script src="assets/js/components/Security.js?v=14"></script>
+    <script src="assets/js/app.js?v=15"></script>
+</body>
+</html>

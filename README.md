@@ -1667,6 +1667,320 @@ Semua interaksi utama berjalan tanpa reload halaman penuh dan tetap memiliki fal
 
 ---
 
+# Praktikum 10 - REST API CodeIgniter 4
+
+## Tujuan
+
+1. Memahami konsep REST API dan pertukaran data JSON.
+2. Membuat endpoint artikel dengan HTTP method yang sesuai.
+3. Menguji operasi tampil, tambah, ubah, detail, dan hapus data.
+
+## 1. Membuat REST Controller
+
+Controller `app/Controllers/Post.php` dibuat dengan turunan `ResourceController`. Controller
+memakai `ArtikelModel` dan menyediakan lima operasi utama:
+
+| Method | Endpoint | Controller | Fungsi |
+|---|---|---|---|
+| `GET` | `/post` | `index()` | Menampilkan seluruh artikel dan kategori |
+| `GET` | `/post/{id}` | `show()` | Menampilkan satu artikel |
+| `POST` | `/post` | `create()` | Menambahkan artikel |
+| `PUT/PATCH` | `/post/{id}` | `update()` | Memperbarui artikel |
+| `DELETE` | `/post/{id}` | `delete()` | Menghapus artikel |
+
+Response menggunakan JSON dan status HTTP `200`, `201`, `400`, `401`, atau `404` sesuai
+hasil request. Input judul, isi, status, dan kategori selalu divalidasi pada server.
+
+## 2. Mendaftarkan Route API
+
+Route API didaftarkan eksplisit pada `app/Config/Routes.php`. Route modifikasi data diberi
+filter `apiauth` pada Praktikum 14, sedangkan operasi `GET` tetap dapat dipakai untuk
+menampilkan data frontend.
+
+```php
+$routes->get('post', 'Post::index');
+$routes->get('post/(:num)', 'Post::show/$1');
+$routes->post('post', 'Post::create', ['filter' => 'apiauth']);
+$routes->put('post/(:num)', 'Post::update/$1', ['filter' => 'apiauth']);
+$routes->delete('post/(:num)', 'Post::delete/$1', ['filter' => 'apiauth']);
+```
+
+## 3. Hasil REST API
+
+Halaman dokumentasi interaktif pada `/vuejs/#/api-docs` menampilkan daftar endpoint dan
+contoh response asli dari `GET /post`.
+
+![REST API CodeIgniter 4](images/praktikum10-rest-api.png)
+
+## 4. Pengujian Praktikum 10
+
+| Pengujian | HTTP | Hasil |
+|---|---:|---|
+| Menampilkan seluruh artikel | `200` | Berhasil |
+| Menampilkan artikel berdasarkan ID | `200` | Berhasil |
+| Menambah artikel bertoken | `201` | Berhasil |
+| Mengubah artikel dengan PUT | `200` | Berhasil |
+| Menghapus artikel | `200` | Berhasil |
+| ID tidak ditemukan | `404` | Berhasil ditangani |
+
+---
+
+# Praktikum 11 - Frontend API dengan VueJS 3
+
+## Tujuan
+
+1. Membuat frontend VueJS yang mengambil data dari REST API.
+2. Mengimplementasikan CRUD artikel menggunakan Axios.
+3. Menampilkan form tambah dan edit tanpa pindah halaman.
+
+## 1. Struktur Frontend VueJS
+
+Agar backend dan frontend tetap berada pada repository yang sama, project VueJS disimpan
+di dalam `public/vuejs/`:
+
+```text
+public/vuejs/
+├── index.html
+└── assets/
+    ├── css/style.css
+    ├── js/app.js
+    ├── js/components/
+    └── vendor/
+```
+
+Vue 3, Vue Router 4, dan Axios disimpan pada folder `assets/vendor`. Dengan demikian,
+aplikasi dapat dijalankan tanpa bergantung pada CDN ketika praktikum diperiksa.
+
+## 2. Menampilkan Data Artikel
+
+Komponen `Artikel.js` memanggil endpoint `GET /post` saat komponen selesai dipasang.
+Response JSON kemudian dirender menggunakan `v-for` ke tabel artikel.
+
+```javascript
+const response = await axios.get(apiUrl + '/post');
+this.artikel = response.data.artikel || [];
+```
+
+![Tabel CRUD artikel VueJS](images/praktikum11-vue-crud.png)
+
+## 3. Form Tambah dan Ubah
+
+Satu modal form digunakan untuk tambah dan ubah data. Form memakai `v-model`,
+`@submit.prevent`, loading state, validasi HTML, serta pesan sukses/error dari API.
+
+![Form tambah artikel VueJS](images/praktikum11-vue-form.png)
+
+## 4. Operasi CRUD Axios
+
+- `axios.post()` menambahkan artikel;
+- `axios.put()` memperbarui artikel;
+- `axios.delete()` menghapus artikel;
+- tabel dimuat ulang setelah perubahan berhasil;
+- kategori dan status tersedia pada form;
+- data output dirender melalui interpolasi Vue sehingga tidak dimasukkan sebagai HTML mentah.
+
+Pengujian browser berhasil membuat artikel sementara melalui form VueJS, memastikan data
+muncul sebagai baris pertama, lalu membersihkan kembali record tersebut melalui API.
+
+---
+
+# Praktikum 12 - Vue Components dan Vue Router SPA
+
+## Tujuan
+
+1. Memecah antarmuka menjadi komponen reusable.
+2. Menggunakan Vue Router untuk perpindahan halaman tanpa hard reload.
+3. Membuat komponen About yang berisi profil mahasiswa dan avatar.
+
+## 1. Komponen Aplikasi
+
+Frontend dipecah menjadi komponen berikut:
+
+| Komponen | Fungsi |
+|---|---|
+| `Home.js` | Halaman beranda SPA |
+| `Artikel.js` | Manajemen CRUD artikel |
+| `About.js` | Profil mahasiswa dan avatar |
+| `ApiDocs.js` | Dokumentasi dan contoh response REST API |
+| `Login.js` | Form autentikasi administrator |
+| `Security.js` | Diagnostik token dan filter API |
+
+## 2. Konfigurasi Vue Router
+
+Router menggunakan `createWebHashHistory()` agar semua route dapat berjalan dari file
+statis pada server CI4.
+
+```javascript
+const routes = [
+    { path: '/', component: Home },
+    { path: '/artikel', component: Artikel, meta: { requiresAuth: true } },
+    { path: '/about', component: About, meta: { requiresAuth: true } }
+];
+```
+
+## 3. Beranda SPA
+
+![Beranda Vue Router SPA](images/praktikum12-vue-router-home.png)
+
+## 4. Komponen About
+
+Komponen About menampilkan nama, NIM, kelas, mata kuliah, dan avatar. Nilai NIM dan kelas
+disiapkan dengan tanda `—` karena data tersebut belum dicantumkan pada identitas repository.
+
+![Komponen About VueJS](images/praktikum12-vue-router-about.png)
+
+Perpindahan Beranda, Kelola Artikel, About, REST API, dan API Security telah diuji. URL hash
+berubah dan komponen diganti tanpa memuat ulang dokumen HTML utama.
+
+---
+
+# Praktikum 13 - VueJS Authentication dan Navigation Guards
+
+## Tujuan
+
+1. Membuat endpoint login pada backend CodeIgniter 4.
+2. Membuat komponen login pada frontend VueJS.
+3. Melindungi route Artikel dan About menggunakan Navigation Guard.
+4. Menyediakan proses login dan logout pada SPA.
+
+## 1. Endpoint Login API
+
+Controller `app/Controllers/Api/Auth.php` menerima username/email dan password melalui
+`POST /api/login`. Password diverifikasi menggunakan `password_verify()` terhadap hash di
+database. Jika valid, server mengembalikan token bertanda tangan dan informasi pengguna.
+
+```json
+{
+  "status": 200,
+  "messages": "Login berhasil.",
+  "data": {
+    "username": "admin",
+    "token": "payload.signature"
+  }
+}
+```
+
+## 2. Komponen Login
+
+`Login.js` mengirim kredensial menggunakan Axios. Setelah login berhasil, status login,
+username, dan token disimpan pada `localStorage`, kemudian pengguna diarahkan ke route
+`/artikel`.
+
+## 3. Navigation Guard
+
+`router.beforeEach()` memeriksa route yang memiliki `meta.requiresAuth`. Pengguna tanpa
+token ditolak, diberi peringatan, lalu dialihkan ke halaman login. Route Artikel dan About
+keduanya menggunakan perlindungan ini.
+
+![Navigation Guard mengalihkan ke login](images/praktikum13-navigation-guard-login.png)
+
+## 4. Login Berhasil
+
+Setelah login valid, tabel artikel dapat diakses, nama administrator tampil pada header,
+dan menu Login berubah menjadi Logout.
+
+![Login VueJS berhasil](images/praktikum13-login-success.png)
+
+## 5. Logout
+
+Logout menampilkan dialog konfirmasi aplikasi, menghapus token serta status autentikasi,
+dan mengembalikan pengguna ke beranda. Menu kembali menampilkan link Login.
+
+![Tampilan setelah logout](images/praktikum13-logout.png)
+
+---
+
+# Praktikum 14 - Token Authentication dan Axios Interceptors
+
+## Tujuan
+
+1. Melindungi endpoint modifikasi data pada sisi server.
+2. Memvalidasi Bearer token menggunakan CodeIgniter Filter.
+3. Menyuntikkan token otomatis melalui Axios Interceptor.
+4. Membandingkan Navigation Guard dan API Filter.
+
+## 1. Token Bertanda Tangan
+
+`app/Libraries/ApiToken.php` menerbitkan token yang memiliki user ID, username, waktu
+terbit, dan waktu kedaluwarsa delapan jam. Payload ditandatangani HMAC SHA-256 sehingga
+perubahan isi token akan membuat validasi gagal. Environment production dapat menyediakan
+secret sendiri melalui `API_TOKEN_SECRET`.
+
+## 2. ApiAuthFilter
+
+`app/Filters/ApiAuthFilter.php` membaca header `Authorization`, memastikan format
+`Bearer <token>`, memverifikasi signature dan waktu kedaluwarsa, kemudian mengembalikan
+HTTP `401` jika token hilang atau tidak valid.
+
+Alias `apiauth` didaftarkan pada `app/Config/Filters.php` dan dipasang pada route `POST`,
+`PUT`, `PATCH`, serta `DELETE /post`.
+
+## 3. Axios Request dan Response Interceptors
+
+Request interceptor menambahkan token hanya untuk request menuju backend aplikasi:
+
+```javascript
+axios.interceptors.request.use((config) => {
+    const token = localStorage.getItem('userToken');
+    if (token) config.headers.Authorization = 'Bearer ' + token;
+    return config;
+});
+```
+
+Response interceptor menangani HTTP `401`, menghapus sesi yang tidak valid, dan
+mengarahkan pengguna kembali ke route login.
+
+## 4. Diagnostik Keamanan
+
+Halaman `/vuejs/#/security` menjalankan dua pengujian secara berdampingan:
+
+- POST tanpa token ditolak dengan HTTP `401`;
+- request Axios dengan token otomatis diterima dengan HTTP `200`.
+
+Token pada tampilan selalu dimasking agar nilai lengkapnya tidak masuk screenshot atau
+dokumentasi repository.
+
+![Token filter dan Axios Interceptor](images/praktikum14-token-interceptor.png)
+
+## 5. Navigation Guard vs CodeIgniter Filter
+
+| Perlindungan | Lokasi | Fungsi |
+|---|---|---|
+| Vue Router Navigation Guard | Browser/client | Mencegah pengguna membuka komponen yang memerlukan login |
+| CodeIgniter ApiAuthFilter | Server/backend | Mencegah request ilegal mengubah database meskipun endpoint ditembak langsung |
+
+Navigation Guard meningkatkan alur dan pengalaman pengguna, tetapi tidak boleh dianggap
+sebagai pengaman database. Perlindungan sebenarnya tetap harus diterapkan di server melalui
+filter dan validasi token.
+
+## 6. Hasil Pengujian Akhir Praktikum 10-14
+
+| Pengujian | Hasil |
+|---|---|
+| `GET /post` tanpa login | HTTP `200` |
+| `POST /post` tanpa token | HTTP `401` |
+| Login akun valid | HTTP `200` |
+| Token terdiri dari payload dan signature | Berhasil |
+| Create artikel bertoken | HTTP `201` |
+| Update artikel bertoken | HTTP `200` |
+| Delete artikel bertoken | HTTP `200` |
+| Vue Router berpindah tanpa hard reload | Berhasil |
+| Route Artikel dan About tanpa login | Dialihkan ke Login |
+| Axios Interceptor mengirim Bearer token | Berhasil |
+| Logout menghapus sesi frontend | Berhasil |
+
+---
+
+# Kesimpulan Praktikum 10-14
+
+REST API artikel, frontend VueJS CRUD, komponen SPA, Vue Router, autentikasi login,
+Navigation Guards, token bertanda tangan, CodeIgniter Filter, dan Axios Interceptors telah
+terintegrasi dalam satu repository. Frontend dapat dibuka melalui `/vuejs/`, sedangkan
+seluruh bukti praktikum disimpan pada folder `images` dan direferensikan menggunakan path
+relatif yang kompatibel dengan GitHub README.
+
+---
+
 
 # 🔗 Repository GitHub
 
