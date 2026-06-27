@@ -1466,7 +1466,105 @@ aman serta mudah di-debug.
 
 ---
 
+# Praktikum 9 - AJAX Pagination dan Search
 
+# Tujuan Praktikum
+
+1. Membuat pagination artikel yang berjalan secara asynchronous.
+2. Menambahkan live search dan filter kategori tanpa reload halaman.
+3. Menambahkan sorting artikel berdasarkan ID, judul, kategori, atau status.
+4. Memberikan loading indicator dan informasi jumlah data untuk pengalaman pengguna yang lebih baik.
+
+---
+
+# 1. Memperbarui Controller Artikel
+
+Method `admin_index()` pada `app/Controllers/Artikel.php` menerima parameter berikut:
+
+| Parameter | Fungsi |
+|---|---|
+| `q` | Mencari judul artikel |
+| `kategori_id` | Memfilter kategori |
+| `page` | Menentukan halaman aktif |
+| `sort` | Menentukan kolom sorting |
+| `direction` | Menentukan arah `ASC` atau `DESC` |
+
+Kolom sorting dipetakan melalui whitelist agar nama kolom yang dikirim pengguna tidak
+langsung dimasukkan ke query. Query tetap menggunakan relasi kategori dan pagination
+CodeIgniter:
+
+```php
+$artikel = $model->paginate(10, 'artikel', $page);
+
+if ($this->request->isAJAX()) {
+    return $this->response->setJSON([
+        'status'  => 'OK',
+        'artikel' => $artikel,
+        'filters' => $filters,
+        'pager'   => $pagerData,
+    ]);
+}
+```
+
+Request biasa tetap menampilkan view HTML sebagai fallback, sedangkan request AJAX
+menerima data artikel, filter aktif, dan metadata pagination dalam format JSON.
+
+---
+
+# 2. Membuat Pagination AJAX
+
+View `app/Views/artikel/admin_index.php` memuat jQuery lokal dan mengirim request `GET`
+ke `/admin/artikel`. Tabel serta tombol pagination dibuat ulang dari response JSON tanpa
+reload halaman penuh.
+
+```javascript
+$.ajax({
+    url: endpoint,
+    method: 'GET',
+    data: queryData(page),
+    dataType: 'json',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+});
+```
+
+URL browser ikut diperbarui menggunakan `history.replaceState()`, sehingga filter dan
+halaman aktif tetap terlihat pada query string.
+
+## Screenshot
+
+![Daftar artikel dengan pagination AJAX](images/praktikum9-ajax-pagination.png)
+
+![Halaman kedua pagination AJAX](images/praktikum9-ajax-page-2.png)
+
+---
+
+# 3. Menambahkan Live Search dan Filter Kategori
+
+Input pencarian menggunakan debounce 350 milidetik agar request tidak dikirim pada setiap
+penekanan tombol secara berlebihan. Perubahan kategori langsung memuat data baru dan
+mengembalikan pagination ke halaman pertama.
+
+Data artikel yang diterima selalu di-escape sebelum dimasukkan ke tabel untuk mencegah
+HTML dari database dijalankan pada browser.
+
+---
+
+# 4. Menambahkan Sorting AJAX
+
+Artikel dapat diurutkan berdasarkan:
+
+- ID;
+- judul;
+- kategori;
+- status;
+- arah naik (`ASC`) atau turun (`DESC`).
+
+Perubahan pilihan sorting langsung menjalankan request AJAX. Screenshot berikut
+menunjukkan pencarian `CodeIgniter` yang diurutkan berdasarkan judul secara ascending.
+
+## Screenshot
+
+![Live search dan sorting AJAX](images/praktikum9-ajax-search-sort.png)
 
 
 # 🔗 Repository GitHub
