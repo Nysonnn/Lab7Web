@@ -1012,16 +1012,192 @@ Dengan demikian tampilan data menjadi lebih rapih, efisien, dan mudah digunakan 
 
 ---
 
+# 🚀 Praktikum 6 - Relasi Tabel dan Query Builder
+
+# 📌 Tujuan Praktikum
+
+1. Memahami konsep relasi antar tabel pada database.
+2. Mengimplementasikan relasi **One-to-Many** antara kategori dan artikel.
+3. Mengambil data dari dua tabel menggunakan **Query Builder** dan `JOIN`.
+4. Menampilkan, mencari, dan memfilter artikel berdasarkan kategori.
+
+---
+
+# 1️⃣ Membuat Tabel Kategori dan Relasi Artikel
+
+Migration berikut ditambahkan agar struktur Praktikum 6 dapat dibuat secara otomatis:
+
+```bash
+app/Database/Migrations/2026-06-27-000001_CreateKategoriRelation.php
+```
+
+Migration tersebut membuat tabel `kategori`, menambahkan kolom `id_kategori` pada tabel
+`artikel`, dan membuat foreign key `fk_kategori_artikel`.
+
+Relasi yang digunakan adalah:
+
+```text
+kategori (1) -------- (*) artikel
+```
+
+Menjalankan migration:
+
+```bash
+php spark migrate --all
+```
+
+---
+
+# 2️⃣ Membuat Model Kategori
+
+Model baru dibuat pada:
+
+```bash
+app/Models/KategoriModel.php
+```
+
+Field yang dapat disimpan melalui model adalah `nama_kategori` dan `slug_kategori`.
+
+---
+
+# 3️⃣ Memodifikasi Model Artikel
+
+Field `id_kategori` ditambahkan ke `$allowedFields`. Model artikel juga memiliki method
+untuk mengambil artikel beserta kategorinya:
+
+```php
+public function getArtikelDenganKategori(?string $slugKategori = null): array
+{
+    $this->select('artikel.*, kategori.nama_kategori, kategori.slug_kategori')
+        ->join('kategori', 'kategori.id_kategori = artikel.id_kategori', 'left')
+        ->orderBy('artikel.id', 'DESC');
+
+    if ($slugKategori !== null) {
+        $this->where('kategori.slug_kategori', $slugKategori);
+    }
+
+    return $this->findAll();
+}
+```
+
+`LEFT JOIN` digunakan agar artikel tetap dapat ditampilkan meskipun kategorinya belum diisi.
+
+---
+
+# 4️⃣ Menambahkan Seeder Kategori dan Artikel
+
+Seeder berikut menyediakan tiga kategori serta data artikel untuk pengujian:
+
+```bash
+app/Database/Seeds/KategoriArtikelSeeder.php
+```
+
+Menjalankan seeder:
+
+```bash
+php spark db:seed KategoriArtikelSeeder
+```
+
+Kategori yang dibuat adalah **Teknologi**, **Pemrograman**, dan **Pendidikan**.
+
+---
+
+# 5️⃣ Memodifikasi Controller Artikel
+
+Controller `Artikel` diperbarui untuk menangani:
+
+- daftar artikel beserta nama kategori;
+- filter judul dan kategori pada halaman admin;
+- pagination dengan parameter filter tetap tersimpan;
+- tambah, edit, dan hapus artikel;
+- halaman detail yang menampilkan nama kategori;
+- daftar artikel berdasarkan kategori tertentu.
+
+Query admin dibangun menggunakan `select()`, `join()`, `like()`, `where()`, dan
+`paginate()` dari CodeIgniter 4 Query Builder.
+
+---
+
+# 6️⃣ Membuat Filter Kategori di Halaman Admin
+
+Form admin memiliki input pencarian dan dropdown kategori. Parameter keduanya tetap
+dibawa saat pengguna berpindah halaman:
+
+```php
+<?= $pager->only(['q', 'kategori_id'])->links('artikel'); ?>
+```
+
+## Screenshot
+
+![Filter kategori halaman admin](screenshots/praktikum6-admin-filter-kategori.png)
+
+---
+
+# 7️⃣ Menampilkan Kategori pada Halaman Artikel
+
+Halaman publik menampilkan badge kategori pada setiap artikel dan tombol filter untuk
+membuka artikel berdasarkan kategori.
+
+Route tambahan:
+
+```php
+$routes->get('/kategori/(:segment)', 'Artikel::kategori/$1');
+```
+
+## Screenshot
+
+![Daftar artikel dengan kategori](screenshots/praktikum6-artikel-kategori.png)
+
+---
+
+# 8️⃣ Membuat Form Tambah, Edit, dan Detail Artikel
+
+View berikut ditambahkan:
+
+```text
+app/Views/artikel/form_add.php
+app/Views/artikel/form_edit.php
+app/Views/artikel/detail.php
+```
+
+Form tambah dan edit menyediakan pilihan kategori serta status artikel. Halaman detail
+menampilkan nama kategori dari hasil join tabel.
+
+---
+
+# 9️⃣ Hasil Pengujian
+
+Pengujian dilakukan pada server lokal CodeIgniter 4 dan database MySQL `lab_ci4`.
+
+| Fitur | Hasil |
+|---|---|
+| Login admin | Berhasil |
+| Menampilkan artikel dan kategori | Berhasil |
+| Pencarian dan filter kategori | Berhasil |
+| Pagination | Berhasil |
+| Tambah artikel | Berhasil |
+| Edit artikel dan ganti kategori | Berhasil |
+| Detail artikel berkategori | Berhasil |
+| Hapus artikel | Berhasil |
+
+Semua endpoint yang diuji memberikan respons HTTP `200`, dan hasil operasi CRUD telah
+diverifikasi langsung pada database.
+
+---
+
+# ✅ Kesimpulan Praktikum 6
+
+Pada praktikum ini berhasil dibuat relasi One-to-Many antara tabel `kategori` dan
+`artikel`. Data dari kedua tabel dapat digabungkan dengan Query Builder, kemudian
+ditampilkan pada halaman publik dan admin. Fitur pencarian, filter kategori, pagination,
+CRUD, detail artikel, dan daftar artikel per kategori juga telah berjalan dengan baik.
+
+---
+
 
 # 🔗 Repository GitHub
 
-Tambahkan link repository GitHub di sini.
-
-Contoh:
-
-```bash
-https://github.com/Nysonnn/Lab7Web
-```
+[https://github.com/Nysonnn/Lab7Web](https://github.com/Nysonnn/Lab7Web)
 
 ---
 
