@@ -46,11 +46,29 @@ class Artikel extends BaseController
     {
         $q = trim((string) ($this->request->getGet('q') ?? ''));
         $kategoriId = trim((string) ($this->request->getGet('kategori_id') ?? ''));
+        $page = max(1, (int) ($this->request->getGet('page') ?? $this->request->getGet('page_artikel') ?? 1));
+        $sort = (string) ($this->request->getGet('sort') ?? 'id');
+        $direction = strtoupper((string) ($this->request->getGet('direction') ?? 'DESC'));
+
+        $sortableColumns = [
+            'id'       => 'artikel.id',
+            'judul'    => 'artikel.judul',
+            'kategori' => 'kategori.nama_kategori',
+            'status'   => 'artikel.status',
+        ];
+
+        if (! array_key_exists($sort, $sortableColumns)) {
+            $sort = 'id';
+        }
+
+        if (! in_array($direction, ['ASC', 'DESC'], true)) {
+            $direction = 'DESC';
+        }
 
         $model = new ArtikelModel();
         $model->select('artikel.*, kategori.nama_kategori')
             ->join('kategori', 'kategori.id_kategori = artikel.id_kategori', 'left')
-            ->orderBy('artikel.id', 'DESC');
+            ->orderBy($sortableColumns[$sort], $direction);
 
         if ($q !== '') {
             $model->like('artikel.judul', $q);
@@ -60,12 +78,36 @@ class Artikel extends BaseController
             $model->where('artikel.id_kategori', $kategoriId);
         }
 
+        $artikel = $model->paginate(10, 'artikel', $page);
+        $pager = $model->pager;
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'status'  => 'OK',
+                'artikel' => $artikel,
+                'filters' => [
+                    'q'           => $q,
+                    'kategori_id' => $kategoriId,
+                    'sort'        => $sort,
+                    'direction'   => $direction,
+                ],
+                'pager' => [
+                    'currentPage' => $pager->getCurrentPage('artikel'),
+                    'pageCount'   => $pager->getPageCount('artikel'),
+                    'perPage'     => $pager->getPerPage('artikel'),
+                    'total'       => $pager->getTotal('artikel'),
+                ],
+            ]);
+        }
+
         return view('artikel/admin_index', [
             'title'        => 'Daftar Artikel (Admin)',
             'q'            => $q,
             'kategori_id'  => $kategoriId,
-            'artikel'      => $model->paginate(10, 'artikel'),
-            'pager'        => $model->pager,
+            'sort'         => $sort,
+            'direction'    => $direction,
+            'artikel'      => $artikel,
+            'pager'        => $pager,
             'kategori'     => (new KategoriModel())->orderBy('nama_kategori', 'ASC')->findAll(),
         ]);
     }

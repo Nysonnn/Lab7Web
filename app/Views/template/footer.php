@@ -1,12 +1,12 @@
         </main>
 
         <aside id="sidebar">
-            <h3>Praktikum 6</h3>
-            <p>Implementasi relasi One-to-Many antara kategori dan artikel.</p>
+            <h3>Praktikum 9</h3>
+            <p>Pengelolaan daftar artikel secara asynchronous tanpa reload halaman.</p>
             <ul>
-                <li>Model dan relasi tabel</li>
-                <li>Query Builder join</li>
-                <li>Filter kategori</li>
+                <li>Live search AJAX</li>
+                <li>Pagination dinamis</li>
+                <li>Sorting judul dan kategori</li>
             </ul>
         </aside>
     </div>

@@ -11,7 +11,7 @@
     <header class="site-header">
         <p class="eyebrow">Pemrograman Web 2</p>
         <h1>Praktikum CodeIgniter 4</h1>
-        <p>Relasi tabel dan Query Builder</p>
+        <p>AJAX Pagination, Search, dan Sorting</p>
     </header>
 
     <nav class="site-nav" aria-label="Navigasi utama">
